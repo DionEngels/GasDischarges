@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# ignore without extension and with a and o
+*
+!/**/
+!*.*
+*.o
+*.a
