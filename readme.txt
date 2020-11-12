@@ -1,1 +1,0 @@
-Please put all files and sub-folders from this folder in a folder on your Windows-computer. Then edit setenv.bat and replace 'C:\CPPP' with the location of this folder. Now run setenv.bat by double clicking on it. From now on things should work properly.
