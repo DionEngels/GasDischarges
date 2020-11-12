@@ -4,12 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**"
-                //"/usr/include/eigen3/**",
-                //"/usr/local/include/pcl-1.9/**",
-                //"/usr/include/vtk-7.1",
-                //"/home/dionengels/opencv/**"
             ],
-            "defines": [], // "OPENCV_INSTALLED", "SLAM_LOGGING"
+            "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "gnu++14",
