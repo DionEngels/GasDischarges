@@ -6,3 +6,5 @@ project: main.cpp $(LIB_NAMES) $(HEADERS) Makefile ../Makefile.rules
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ $< $(LINK_ARGS)
 clean:
 	rm -f project
+	rm -f main
+	rm -f *.a *.o
