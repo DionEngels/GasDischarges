@@ -100,7 +100,7 @@ public:
    *  field data can be plotted by piping to gnuplot.
    */
   void plot(std::string xlabel = "", std::string ylabel = "",
-            std::string title = "", bool save = false) const {
+            std::string title = "") const {
 
     FILE *pipe = popen("gnuplot", "w");
     if (pipe != NULL) {
