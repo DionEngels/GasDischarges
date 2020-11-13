@@ -123,7 +123,7 @@ public:
 
       if (strcmp(output, "save") == 0) {
         fprintf(pipe, "set terminal pdf\n");
-        fprintf(pipe, "set output \"%s.pdf\"\n", title.c_str());
+        fprintf(pipe, "set output \"figs/%s.pdf\"\n", title.c_str());
         fprintf(pipe, "replot\n");
         fprintf(pipe, "unset output\n");
         fprintf(pipe, "unset terminal\n");
