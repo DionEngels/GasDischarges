@@ -143,7 +143,7 @@ void Grid::plot(const Field &f, std::string xlabel, std::string ylabel,
 
     if (strcmp(output, "save") == 0) {
       fprintf(pipe, "set terminal pdf\n");
-      fprintf(pipe, "set output \"%s.pdf\"\n", title.c_str());
+      fprintf(pipe, "set output \"figs/%s.pdf\"\n", title.c_str());
       fprintf(pipe, "replot\n");
       fprintf(pipe, "unset output\n");
       fprintf(pipe, "unset terminal\n");
@@ -185,7 +185,7 @@ void Grid::plot(const Field &f1, const Field &f2, std::string xlabel,
 
     if (strcmp(output, "save") == 0) {
       fprintf(pipe, "set terminal pdf\n");
-      fprintf(pipe, "set output \"%s.pdf\"\n", title.c_str());
+      fprintf(pipe, "set output \"figs/%s.pdf\"\n", title.c_str());
       fprintf(pipe, "replot\n");
       fprintf(pipe, "unset output\n");
       fprintf(pipe, "unset terminal\n");
