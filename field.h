@@ -9,8 +9,8 @@
 #include "basics.h"
 #include <cassert>
 #include <iostream>
+#include <string.h>
 #include <vector>
-
 
 /** A representation of (one-dimensional) real-valued field variables.
  *  Fields can be constructed by specifying the number of field points
@@ -90,18 +90,49 @@ public:
       os << i << '\t' << m_data[i] << '\n';
     }
   }
+
+  void write(FILE *pipe) const {
+    for (unsigned i = 0; i < m_data.size(); i++) {
+      fprintf(pipe, "%i\t%f\n", i, m_data[i]);
+    }
+  }
   /** This writes the field to stdout with some extra commands so the
    *  field data can be plotted by piping to gnuplot.
    */
   void plot(std::string xlabel = "", std::string ylabel = "",
-            std::string title = "") const {
-    std::cout << "unset key" << std::endl;
-    std::cout << "set xlabel \"" << xlabel << "\"" << std::endl;
-    std::cout << "set ylabel \"" << ylabel << "\"" << std::endl;
-    std::cout << "set title \"" << title << "\"" << std::endl;
-    std::cout << "plot '-' w l" << std::endl;
-    write(std::cout);
-    std::cout << "e" << std::endl;
+            std::string title = "", bool save = false) const {
+
+    FILE *pipe = popen("gnuplot", "w");
+    if (pipe != NULL) {
+
+      fprintf(pipe, "unset key\n");
+      fprintf(pipe, "set xlabel \"%s\"\n", xlabel.c_str());
+      fprintf(pipe, "set ylabel \"%s\"\n", ylabel.c_str());
+      fprintf(pipe, "set title \"%s\"\n", title.c_str());
+      fprintf(pipe, "plot '-' w l\n");
+      write(pipe);
+      fprintf(pipe, "%s\n", "e");
+      fflush(pipe);
+
+      char output[5];
+
+      // wait for command line input
+      std::cin.clear();
+      std::cin.ignore(std::cin.rdbuf()->in_avail());
+      std::cin.get(output, 5);
+
+      if (strcmp(output, "save") == 0) {
+        fprintf(pipe, "set terminal pdf\n");
+        fprintf(pipe, "set output \"%s.pdf\"\n", title.c_str());
+        fprintf(pipe, "replot\n");
+        fprintf(pipe, "unset output\n");
+        fprintf(pipe, "unset terminal\n");
+      }
+
+      pclose(pipe);
+    } else {
+      std::cerr << "Creating plot failed!" << std::endl;
+    }
   }
 
 private:
