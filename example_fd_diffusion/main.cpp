@@ -23,11 +23,13 @@ int main() {
 
   // West BC:
   sys.ap(0) = 1;
-  sys.b(0) = dens_w;
+  sys.b(0) = 0;
+  sys.aw(0) = 1;
 
   // East BC:
   sys.ap(N - 1) = 1;
-  sys.b(N - 1) = dens_e;
+  sys.ae(N - 1) = 1;
+  sys.b(N - 1) = 0;
 
   // Interior points: -Dd^2n/dx^2 = S.
   for (unsigned i = 1; i < N - 1; ++i) {
@@ -41,13 +43,14 @@ int main() {
   sys.solve(dens);
 
   // 5. write position, the density, the analytical density and the error.
+  std::cout << "pos\tres\tanalytic\terror" << std::endl;
 
   for (unsigned i = 0; i < N; ++i) {
     const double x = del * i;
     const double dens_an =
         0.5 * (S / D) * x * (L - x) + (dens_e - dens_w) * x / L + dens_w;
     const double error = dens[i] - dens_an;
-    std::cout << x << '\t' << dens[i] << '\t' << dens_an << '\t' << error
+    std::cout << x << '\t' << dens[i] << '\t' << dens_an << "\t \t" << error
               << std::endl;
   }
 
