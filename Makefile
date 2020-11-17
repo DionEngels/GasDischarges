@@ -1,7 +1,7 @@
 include Makefile.rules
 HEADERS = $(shell ls *.h)
 
-EXAMPLE_SUBDIRS = $(shell ls -d example_* | sed "s/example_template//")
+EXAMPLE_SUBDIRS = $(shell ls -d example_* | ls -d solution_* | sed "s/example_template//")
 
 
 .PHONY: example_subdirs $(EXAMPLE_SUBDIRS)
