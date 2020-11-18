@@ -7,9 +7,9 @@ int main() {
   unsigned size = 5;
   double r = 1.0e-2;
 
-  Grid sph_grid(size, 0.0e-2, r, Grid::Spherical);
+  Grid sph_grid(size, 0.0e-2, r, Grid::Cylindrical);
   double vol_disc = sph_grid.volume();
-  double vol_anal = 4.0 / 3.0 * M_PI * pow(r, 3);
+  double vol_anal = M_PI * pow(r, 2);
   double diff = std::abs(vol_disc - vol_anal);
   double diff_percentage = diff / vol_anal * 100;
 
