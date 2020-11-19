@@ -9,7 +9,7 @@ int main() {
   unsigned size = 8;
   double r = 1;
   double T_e = 100;
-  double T_w = 200;
+  // double T_w = 200;
   double Q = 10;
   double lambda = 0.02;
 
@@ -18,7 +18,7 @@ int main() {
   TridiagonalSystem system_T(size);
 
   // West BC:
-  DirichletBndCond bc_west(T_w);
+  NeumannBndCond bc_west(0.0, 0.0);
   bc_west.ModifyCoefs(system_T, true, grid_rod.del());
 
   // East BC:
@@ -36,6 +36,6 @@ int main() {
   system_T.solve(field_T);
 
   grid_rod.write(std::cout, field_T);
-  grid_rod.plot(field_T, "x (m)", "T (K)", "Exercise 4.11 Dirichlet");
+  grid_rod.plot(field_T, "x (m)", "T (K)", "Exercise 4.11 Neumann");
   return 0;
 }
