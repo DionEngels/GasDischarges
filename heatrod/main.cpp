@@ -1,46 +1,58 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "phivar.h"
 
-int main( int argc, char **argv )
-{
-    const unsigned N = 16;
-	const double xa = 0.0;
-	const double xb = 10;
-	const double Tr = 400.0;
-	const double V = 0.0;
-	const double lambda = 1.0;
-	const double Sc = 10.0;
-	const double Sp = 0.0;
-	const double beta_cv = 1.0;
-	
-	Grid grid( N, xa, xb, Grid::Cartesian );
+int main(int argc, char **argv) {
+  const unsigned N = 16;      // Gridsize
+  const double xa = 0.0;      // x at western point
+  const double xb = 10;       // x at eastern point
+  const double Tr = 400.0;    // T at eastern point
+  const double V = 0.0;       // Velocity V, does not exists so set to 0
+  const double lambda = 1.0;  // heat conductivivity
+  const double Sc = 10.0;     // Source term (constant)
+  const double Sp = 0.0;      // Source term (proportonial)
+  const double beta_cv = 1.0; // Heat capacity
 
-	Field w( grid.num_ew(), V ); 
+  // Define Cartesian grid using grid class
+  Grid grid(N, xa, xb, Grid::Cartesian);
 
-	NeumannBndCond temp_left( 0,0 );
-	DirichletBndCond temp_right( Tr );
+  // Define Field of generalized velocity for all control vlume faces
+  Field w(grid.num_ew(), V);
 
-	PhiVariable temp( grid, w, temp_left, temp_right );
+  // Define the two BCs. East has Neumann with derivative 0
+  // West has constant T: Tr
+  NeumannBndCond temp_left(0, 0);
+  DirichletBndCond temp_right(Tr);
 
-	temp.beta_cv = beta_cv;
-	for( unsigned i=0; i<grid.num_np(); ++i)
-	{
-		temp.lambda[i] = lambda;
-		temp.sc[i] = Sc;
-		temp.sp[i] = Sp;
-	}
-  
-	temp.Update();
+  // Define PhiVariable class called temp based on grid and field w, with BCs
+  // temp_left and temp_right
+  PhiVariable temp(grid, w, temp_left, temp_right);
 
-	grid.write( std::cerr, temp );
-	std::ofstream ofs_T("T.dat");
-	grid.write( ofs_T, temp);
-	std::ofstream ofs_flux("heat_flux_density.dat");
-	grid.write( ofs_flux, temp.flux_density());
+  // Set physical variables for the PhiVariable, such as heat capacity, source
+  // terms and heat conductivity.
+  temp.beta_cv = beta_cv; // Set value for heat capacity
+  // For all nodes, set heat conducitivty and source terms
+  for (unsigned i = 0; i < grid.num_np(); ++i) {
+    temp.lambda[i] = lambda; // heat conductivity
+    temp.sc[i] = Sc;         // constant source
+    temp.sp[i] = Sp;         // proportional source
+  }
 
-	grid.plot( temp, "position (m)", "temperature (K)" );
+  // Solve
+  temp.Update();
 
-	return 0;
-} 
+  // Write result to output
+  grid.write(std::cout, temp);
+  // Write result to T.dat
+  std::ofstream ofs_T("output/T.dat");
+  grid.write(ofs_T, temp);
+  // Write flux density to heat_flux_density.dat
+  std::ofstream ofs_flux("output/heat_flux_density.dat");
+  grid.write(ofs_flux, temp.flux_density());
+
+  // Plot result
+  grid.plot(temp, "position (m)", "temperature (K)", "Exercise 4.12");
+
+  return 0;
+}
