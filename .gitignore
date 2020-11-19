@@ -39,3 +39,4 @@
 *.a
 .pdf
 /figs
+*.dat
