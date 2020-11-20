@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   grid.write(ofs_flux, temp.flux_density());
 
   // Plot result
-  grid.plot(temp, "position (m)", "temperature (K)", "Exercise 4.18");
+  grid.plot(temp, "position (m)", "temperature (K)", "Exercise 4.19");
 
   return 0;
 }
