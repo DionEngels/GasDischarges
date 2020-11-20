@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
   const unsigned N = 16;      // Gridsize
   const double xa = 0.0;      // x at western point
-  const double xb = 10;       // x at eastern point
+  const double xb = 10.0;     // x at eastern point
   const double Tr = 400.0;    // T at eastern point
   const double V = 0.0;       // Velocity V, does not exists so set to 0
   const double lambda = 1.0;  // heat conductivivity
@@ -42,6 +42,12 @@ int main(int argc, char **argv) {
   // Solve
   temp.Update();
 
+  // analytical
+  Field T_analytical(grid.num_np());
+  for (unsigned i = 0; i < grid.num_np(); ++i) {
+    T_analytical[i] = -2.5 * sqr(grid.pos_np(i)) + 650;
+  }
+
   // Write result to output
   grid.write(std::cout, temp);
   // Write result to T.dat
@@ -51,8 +57,12 @@ int main(int argc, char **argv) {
   std::ofstream ofs_flux("output/heat_flux_density.dat");
   grid.write(ofs_flux, temp.flux_density());
 
+  // Write analytical to output
+  grid.write(std::cout, T_analytical);
+
   // Plot result
-  grid.plot(temp, "position (m)", "temperature (K)", "Exercise 4.12");
+  grid.plot(temp, T_analytical, "position (m)", "temperature (K)",
+            "temperature (K)", "Exercise 4.16");
 
   return 0;
 }
