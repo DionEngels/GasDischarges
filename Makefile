@@ -1,7 +1,7 @@
 include Makefile.rules
 HEADERS = $(shell ls *.h)
 
-EXAMPLE_SUBDIRS = $(shell ls -d example_* | ls -d solution_* | ls -d heatrod | ls -d convectiondiffusion | sed "s/example_template//")
+EXAMPLE_SUBDIRS = $(shell find . -maxdepth 1 -type d -and -not -name '.*' -and -not -name 'output' -and -not -name 'intro' -and -not -name 'figs')
 
 
 .PHONY: example_subdirs $(EXAMPLE_SUBDIRS)
