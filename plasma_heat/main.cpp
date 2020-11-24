@@ -12,47 +12,47 @@ int main(int argc, char **argv) {
   const double x_w = 0.001;
   const double T_w = 300.0;
   const double V = 0.0;
-  double T_central = 50000.0;
-  double lambda;
   const double Sc = 1.02 * pow(10, 10);
   const double Sp = 0.0;
   const double k_b = 1.380658e-23;
   const double beta_cv = 2.5 * 5e23 * k_b;
-  const int n_iterations = 10;
+  double residue;
+  double lambda;
+  int iterations = 0;
 
+  // intial conditions
+  double T_central = 2000.0;
+
+  // define grid
   Grid grid(N, x_e, x_w, Grid::Cylindrical);
   Field w(grid.num_ew(), V);
 
-  Grid it_grid(n_iterations - 1, 0.0, n_iterations, Grid::Cartesian);
-  Field it_field(n_iterations + 1);
-  it_field[0] = T_central;
-
+  // BC
   NeumannBndCond temp_east(0, 0);
   DirichletBndCond temp_west(T_w);
 
+  // set initial variables
   PhiVariable temp(grid, w, temp_east, temp_west);
-
   temp.beta_cv = beta_cv;
   for (unsigned i = 0; i < grid.num_np(); ++i) {
     temp.sc[i] = Sc;
     temp.sp[i] = Sp;
   }
 
-  for (int i = 1; i < n_iterations + 1; i++) {
+  // solve
+  do {
     lambda = heavy_heat_conductivity(T_central); // update lambda
     for (unsigned i = 0; i < grid.num_np(); ++i) {
       temp.lambda[i] = lambda; // update PhiVariable
     }
-    temp.Update();       // solve
-    T_central = temp[0]; // set new T_central
-    std::cout << "Iteration " << i << "\t Current T_central " << T_central
+    residue = temp.Update(); // solve
+    T_central = temp[0];     // set new T_central
+    iterations++;
+    std::cout << "Iteration " << iterations << "\t Current residue " << residue
               << std::endl;
-    it_field[i] = T_central;
-  }
+  } while (residue > 10e-6);
 
-  it_grid.plot(it_field, "iterations", "central temperature (K)",
-               "Starting value: 50000 K");
-
+  grid.plot(temp, "position (m)", "temperature (K)", "Exercise 5.8");
   return 0;
 }
 
