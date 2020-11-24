@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   const double x_w = 0.001;
   const double T_w = 300.0;
   const double V = 0.0;
-  double T_central = 2000.0;
+  double T_central = 50000.0;
   double lambda;
   const double Sc = 1.02 * pow(10, 10);
   const double Sp = 0.0;
@@ -21,8 +21,11 @@ int main(int argc, char **argv) {
   const int n_iterations = 10;
 
   Grid grid(N, x_e, x_w, Grid::Cylindrical);
-
   Field w(grid.num_ew(), V);
+
+  Grid it_grid(n_iterations - 1, 0.0, n_iterations, Grid::Cartesian);
+  Field it_field(n_iterations + 1);
+  it_field[0] = T_central;
 
   NeumannBndCond temp_east(0, 0);
   DirichletBndCond temp_west(T_w);
@@ -44,9 +47,11 @@ int main(int argc, char **argv) {
     T_central = temp[0]; // set new T_central
     std::cout << "Iteration " << i << "\t Current T_central " << T_central
               << std::endl;
+    it_field[i] = T_central;
   }
 
-  grid.plot(temp, "position (m)", "temperature (K)", "Exercise 5.5");
+  it_grid.plot(it_field, "iterations", "central temperature (K)",
+               "Starting value: 50000 K");
 
   return 0;
 }
