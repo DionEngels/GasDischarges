@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   // analytical
   Field T_analytical(grid.num_np());
   for (unsigned i = 0; i < grid.num_np(); ++i) {
-    T_analytical[i] = -2.5 * sqr(grid.pos_np(i)) + 650;
+    T_analytical[i] = -2.5 * sqr(grid.pos_np(i)) + 900;
   }
 
   // Write result to output
