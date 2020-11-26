@@ -6,10 +6,10 @@
 #include <iostream>
 
 int main() {
-  unsigned size = 8;
+  unsigned size = 10;
   double r = 1;
   double T_e = 100;
-  // double T_w = 200;
+  double T_w = 200;
   double Q = 10;
   double lambda = 0.02;
 
@@ -18,12 +18,14 @@ int main() {
   TridiagonalSystem system_T(size);
 
   // West BC:
-  NeumannBndCond bc_west(0.0, 0.0);
-  bc_west.ModifyCoefs(system_T, true, grid_rod.del());
+  system_T.ap(0) = 1;
+  system_T.ae(0) = 0;
+  system_T.b(0) = T_w;
 
   // East BC:
-  DirichletBndCond bc_east(T_e);
-  bc_east.ModifyCoefs(system_T, false, grid_rod.del());
+  system_T.ap(size - 1) = 1;
+  system_T.aw(size - 1) = 0;
+  system_T.b(size - 1) = T_e;
 
   // Interior points
   for (unsigned i = 1; i < size - 1; ++i) {
@@ -36,6 +38,6 @@ int main() {
   system_T.solve(field_T);
 
   grid_rod.write(std::cout, field_T);
-  grid_rod.plot(field_T, "x (m)", "T (K)", "Exercise 4.11 Neumann");
+  grid_rod.plot(field_T, "x (m)", "T (K)", "Exercise 4.9");
   return 0;
 }
