@@ -8,8 +8,8 @@
 int main() {
   unsigned size = 10;
   double r = 1;
-  double T_e = 100;
-  double T_w = 200;
+  double T_e = 200;
+  double T_w = 100;
   double Q = 10;
   double lambda = 0.02;
 
