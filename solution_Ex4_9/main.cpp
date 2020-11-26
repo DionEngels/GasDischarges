@@ -8,8 +8,8 @@
 int main() {
   unsigned size = 10;
   double r = 1;
-  double T_e = 200;
-  double T_w = 100;
+  // double T_e = 100;
+  double T_w = 200;
   double Q = 10;
   double lambda = 0.02;
 
@@ -18,15 +18,12 @@ int main() {
   TridiagonalSystem system_T(size);
 
   // West BC:
-  system_T.ap(0) = 1;
-  system_T.ae(0) = 0;
-  system_T.b(0) = T_w;
+  DirichletBndCond bc_west(T_w);
+  bc_west.ModifyCoefs(system_T, false, grid_rod.del());
 
   // East BC:
-  system_T.ap(size - 1) = 1;
-  system_T.aw(size - 1) = 0;
-  system_T.b(size - 1) = T_e;
-
+  NeumannBndCond bc_east(0, 0);
+  bc_east.ModifyCoefs(system_T, true, grid_rod.del());
   // Interior points
   for (unsigned i = 1; i < size - 1; ++i) {
     system_T.aw(i) = lambda * grid_rod.area_ew(i - 1) / grid_rod.dx_np(i);
@@ -38,6 +35,6 @@ int main() {
   system_T.solve(field_T);
 
   grid_rod.write(std::cout, field_T);
-  grid_rod.plot(field_T, "x (m)", "T (K)", "Exercise 4.9");
+  grid_rod.plot(field_T, "x (m)", "T (K)", "Exercise 4.11 Neumann");
   return 0;
 }
