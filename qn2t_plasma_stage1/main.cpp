@@ -31,9 +31,6 @@ const int grid_points = 16;
 // The length of the rod
 const double grid_length = 1.0;
 // Ion source term due to power
-const double W = 100;
-const double S_plus =
-    0.5 * (W / (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
 
 // B.Broks, 9-1-04:
 // A function which computes your local buffer density based on an average
@@ -115,8 +112,14 @@ double ambipolar_diffusion_coefficient(double n0, double Te, double Th) {
 }
 
 int main(int argc, char **argv) {
+  const double W_base = 100;
+  int multiplicity = 10;
+  double W = W_base * multiplicity;
+  double S_plus =
+      0.5 * (W / (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
   double residue;
   int iterations = 0;
+
   // The grid. The first argument is the amount of grid points, the
   // second argument is the position of the left edge, and the third
   // argument is the position of the right edge.
@@ -153,32 +156,31 @@ int main(int argc, char **argv) {
                          (Th_max - Th_min);
   }
 
-  // Solve
-  do {
-    // update
-    calculate_buffer_density(ave_dens, grid, neutr_dens, ion_dens, Te, Th);
-    for (unsigned i = 0; i < grid.num_np(); ++i) {
-      ion_dens.lambda[i] =
-          ambipolar_diffusion_coefficient(neutr_dens[i], Te[i], Th[i]);
-      ion_dens.sc[i] = 0.0;
-      ion_dens.sc[i] += S_plus;
-      ion_dens.sc[i] -= pow(ion_dens[i], 3) * krec(Te[i]);
-    }
+  while (true) {
+    // Solve
+    iterations = 0;
+    do {
 
-    residue = ion_dens.Update(); // solve
-    iterations++;
-    std::cout << "Iteration " << iterations << "\t Current residue " << residue
-              << std::endl;
-  } while (residue > 10e-8);
-
-  std::cout << "Ion Density centre: " << ion_dens[0] << std::endl;
-
-  // plot
-  grid.plot(ion_dens, "position (m)", "temperature (K)",
-            "Exercise 5.21: Ion Density");
-  getchar();
-  grid.plot(neutr_dens, "position (m)", "temperature (K)",
-            "Exercise 5.21: Neutral Density");
+      // update
+      calculate_buffer_density(ave_dens, grid, neutr_dens, ion_dens, Te, Th);
+      for (unsigned i = 0; i < grid.num_np(); ++i) {
+        ion_dens.lambda[i] =
+            ambipolar_diffusion_coefficient(neutr_dens[i], Te[i], Th[i]);
+        ion_dens.sc[i] = 0.0;
+        ion_dens.sc[i] += S_plus;
+        ion_dens.sc[i] -= pow(ion_dens[i], 3) * krec(Te[i]);
+      }
+      residue = ion_dens.Update(); // solve
+      iterations++;
+      std::cout << "Solving Multiplicity: " << multiplicity
+                << " Iteration: " << iterations << std::endl;
+    } while (residue > 10e-8);
+    std::cout << "Ion Density centre: " << ion_dens[0]
+              << " Multiplicity: " << multiplicity << std::endl;
+    multiplicity += 10;
+    W = W_base * multiplicity;
+    S_plus = 0.5 * (W / (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
+  }
 
   // Ready
   return 0;
