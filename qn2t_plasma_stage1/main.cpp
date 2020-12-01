@@ -27,6 +27,9 @@ const double ion_dens_min = 1e12;
 // The average density of the filling gas.
 const double ave_dens = n0_dens;
 const int grid_points = 16;
+const double grid_length = 1.0;
+const double Sc =
+    0.5 * (100 * (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
 
 // B.Broks, 9-1-04:
 // A function which computes your local buffer density based on an average
@@ -127,15 +130,17 @@ int main(int argc, char **argv) {
     Te[i] = 12000 - grid.pos_np(i) / grid.pos_np(grid.num_np() - 1) * 1000;
     Th[i] = 400 - sqr(grid.pos_np(i) / grid.pos_np(grid.num_np() - 1)) * 100;
 
-    Te.lambda[i] = ambipolar_diffusion_coefficient(n0_dens, Te[i], Th[i]);
-    Th.lambda[i] = Te.lambda[i];
-    std::cout << "Point: " << i << ", Th: " << Th[i] << ", Te: " << Te[i]
-              << ", D_amb: " << Te.lambda[i] << std::endl;
+    ion_dens.sc[i] = Sc;
+    ion_dens.lambda[i] = ambipolar_diffusion_coefficient(n0_dens, Te[i], Th[i]);
   }
 
+  ion_dens.Update();
+
+  std::cout << "Ion Density centre: " << ion_dens[0] << std::endl;
+
   // plot
-  grid.plot(Th, "position (m)", "temperature (K)", "Exercise 5.19: Th");
-  grid.plot(Te, "position (m)", "temperature (K)", "Exercise 5.19: Te");
+  grid.plot(ion_dens, "position (m)", "temperature (K)",
+            "Exercise 5.20: Ion Density");
 
   // Ready
   return 0;
