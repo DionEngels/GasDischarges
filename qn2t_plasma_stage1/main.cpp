@@ -26,10 +26,14 @@ const double ion_dens_max = 1e18;
 const double ion_dens_min = 1e12;
 // The average density of the filling gas.
 const double ave_dens = n0_dens;
+// The number of grid points
 const int grid_points = 16;
+// The length of the rod
 const double grid_length = 1.0;
-const double Sc =
-    0.5 * (100 * (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
+// Ion source term due to power
+const double W = 100;
+const double S_plus =
+    0.5 * (W / (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
 
 // B.Broks, 9-1-04:
 // A function which computes your local buffer density based on an average
@@ -92,6 +96,16 @@ void calculate_buffer_density(double ave_dens, const Grid &grid,
                      (ave_dens - total_particles_used / grid_volume);
 }
 
+double krec(double Te) {
+  const double k_rate = 10e-15;
+  const double G = 6.0;
+  const double q = 0.5;
+  return pow((PhysConst::h_planck /
+              sqrt(2 * M_PI * PhysConst::me * PhysConst::k_b * Te)),
+             3) *
+         k_rate * pow(Te, q) / (2 * G);
+}
+
 double ambipolar_diffusion_coefficient(double n0, double Te, double Th) {
   double sig_ia = 7e-19;
   double tau_ia =
@@ -101,25 +115,31 @@ double ambipolar_diffusion_coefficient(double n0, double Te, double Th) {
 }
 
 int main(int argc, char **argv) {
+  double residue;
+  int iterations = 0;
   // The grid. The first argument is the amount of grid points, the
   // second argument is the position of the left edge, and the third
   // argument is the position of the right edge.
   Grid grid(grid_points, 0.0, grid_size, Grid::Cylindrical);
   // the velocity is defined on the cv boundaries. The value is zero
   Field flow_vel(grid.num_ew(), 0.0);
+
   // Te. We have two Neumann conditions.
   NeumannBndCond Te_left(0, 0);
   NeumannBndCond Te_right(0, 0);
   PhiVariable Te(grid, flow_vel, Te_left, Te_right);
+
   // Th. We cool the right wall to 300 K.
   NeumannBndCond Th_left(0, 0);
   DirichletBndCond Th_right(Th_min);
   PhiVariable Th(grid, flow_vel, Th_left, Th_right);
+
   // Ion Density. We have recombination at the right wall, represented by the
   // low ion density value.
   NeumannBndCond ion_dens_left(0, 0);
   DirichletBndCond ion_dens_right(ion_wall_dens);
   PhiVariable ion_dens(grid, flow_vel, ion_dens_left, ion_dens_right);
+
   // neutr_dens
   NeumannBndCond neutr_dens_left(0, 0);
   NeumannBndCond neutr_dens_right(0, 0);
@@ -127,20 +147,38 @@ int main(int argc, char **argv) {
 
   // initialization
   for (unsigned i = 0; i < grid.num_np(); ++i) {
-    Te[i] = 12000 - grid.pos_np(i) / grid.pos_np(grid.num_np() - 1) * 1000;
-    Th[i] = 400 - sqr(grid.pos_np(i) / grid.pos_np(grid.num_np() - 1)) * 100;
-
-    ion_dens.sc[i] = Sc;
-    ion_dens.lambda[i] = ambipolar_diffusion_coefficient(n0_dens, Te[i], Th[i]);
+    Te[i] = Te_max -
+            grid.pos_np(i) / grid.pos_np(grid.num_np() - 1) * (Te_max - Te_min);
+    Th[i] = Th_max - sqr(grid.pos_np(i) / grid.pos_np(grid.num_np() - 1)) *
+                         (Th_max - Th_min);
   }
 
-  ion_dens.Update();
+  // Solve
+  do {
+    // update
+    calculate_buffer_density(ave_dens, grid, neutr_dens, ion_dens, Te, Th);
+    for (unsigned i = 0; i < grid.num_np(); ++i) {
+      ion_dens.lambda[i] =
+          ambipolar_diffusion_coefficient(neutr_dens[i], Te[i], Th[i]);
+      ion_dens.sc[i] = 0.0;
+      ion_dens.sc[i] += S_plus;
+      ion_dens.sc[i] -= pow(ion_dens[i], 3) * krec(Te[i]);
+    }
+
+    residue = ion_dens.Update(); // solve
+    iterations++;
+    std::cout << "Iteration " << iterations << "\t Current residue " << residue
+              << std::endl;
+  } while (residue > 10e-8);
 
   std::cout << "Ion Density centre: " << ion_dens[0] << std::endl;
 
   // plot
   grid.plot(ion_dens, "position (m)", "temperature (K)",
-            "Exercise 5.20: Ion Density");
+            "Exercise 5.21: Ion Density");
+  getchar();
+  grid.plot(neutr_dens, "position (m)", "temperature (K)",
+            "Exercise 5.21: Neutral Density");
 
   // Ready
   return 0;
