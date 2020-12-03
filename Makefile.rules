@@ -1,5 +1,5 @@
 FLUID_LIB  = libfluid.a
 MC_LIB = libmonte_carlo.a
 
-CXXFLAGS= -g -I.. -O2 -Wall -Wno-unused-const-variable
+CXXFLAGS= -g -I.. -O0 -Wall -Wno-unused-const-variable
 
