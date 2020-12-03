@@ -7,10 +7,8 @@
 
 // The physical radius of the grid in m.
 const double grid_size = 0.0125;
-// The maximum of the initialization function of Te
-const double Te_max = 12000;
-// The minimum of the initialization function of Te
-const double Te_min = 11000;
+// The initial value for Te
+const double Te_init = 12160.3;
 // The maximum of the initialization function of Th
 const double Th_max = 400.0;
 // The minimum of the initialization function of Th
@@ -34,6 +32,10 @@ const double grid_length = 1.0;
 const double W = 100 * 5000;
 const double S_plus =
     0.5 * (W / (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
+// argon properties
+const double k_rate = 1e-15;
+const double G = 6.0;
+const double q = 0.5;
 
 // B.Broks, 9-1-04:
 // A function which computes your local buffer density based on an average
@@ -97,15 +99,10 @@ void calculate_buffer_density(double ave_dens, const Grid &grid,
 }
 
 double kion(double Te) {
-  const double k_rate = 1e-15;
-  const double q = 0.5;
   return k_rate * pow(Te, q) * exp(-Argon::E_ion() / (PhysConst::k_b * Te));
 }
 
 double krec(double Te) {
-  const double k_rate = 1e-15;
-  const double G = 6.0;
-  const double q = 0.5;
   return pow((PhysConst::h_planck /
               sqrt(2 * M_PI * PhysConst::me * PhysConst::k_b * Te)),
              3) *
@@ -153,8 +150,7 @@ int main(int argc, char **argv) {
 
   // initialization
   for (unsigned i = 0; i < grid.num_np(); ++i) {
-    Te[i] = Te_max -
-            grid.pos_np(i) / grid.pos_np(grid.num_np() - 1) * (Te_max - Te_min);
+    Te[i] = Te_init;
     Th[i] = Th_max - sqr(grid.pos_np(i) / grid.pos_np(grid.num_np() - 1)) *
                          (Th_max - Th_min);
   }
@@ -162,34 +158,14 @@ int main(int argc, char **argv) {
   // Solve
   do {
     // update
+    calculate_buffer_density(ave_dens, grid, neutr_dens, ion_dens, Te, Th);
     for (unsigned i = 0; i < grid.num_np(); ++i) {
       ion_dens.lambda[i] =
-          ambipolar_diffusion_coefficient(n0_dens, Te[i], Th[i]);
-
-      // Naive
+          ambipolar_diffusion_coefficient(neutr_dens[i], Te[i], Th[i]);
       ion_dens.sc[i] = 0.0;
-      ion_dens.sc[i] += S_plus;
-      ion_dens.sc[i] -= pow(ion_dens[i], 3) * krec(Te[i]);
-      /*
-      // Natural
-      ion_dens.sc[i] = S_plus;
-      ion_dens.sp[i] = -pow(ion_dens[i], 2) * krec(Te[i]);
-      // Extra steep
-      ion_dens.sc[i] = 0.0;
-      ion_dens.sc[i] += S_plus;
-      ion_dens.sc[i] += pow(ion_dens[i], 3) * krec(Te[i]);
-      ion_dens.sp[i] = -2 * pow(ion_dens[i], 2) * krec(Te[i]);
-      // Unstable
-      ion_dens.sc[i] = 0.0;
-      ion_dens.sc[i] += S_plus;
-      ion_dens.sc[i] -= 2 * pow(ion_dens[i], 3) * krec(Te[i]);
-      ion_dens.sp[i] = pow(ion_dens[i], 2) * krec(Te[i]);
-      // Linearisation
-      ion_dens.sc[i] = 0.0;
-      ion_dens.sc[i] += S_plus;
+      ion_dens.sc[i] += neutr_dens[i] * ion_dens[i] * kion(Te[i]);
       ion_dens.sc[i] += 2 * pow(ion_dens[i], 3) * krec(Te[i]);
       ion_dens.sp[i] = -3 * pow(ion_dens[i], 2) * krec(Te[i]);
-      */
     }
 
     residue = ion_dens.Update(); // solve
@@ -202,7 +178,10 @@ int main(int argc, char **argv) {
 
   // plot
   grid.plot(ion_dens, "position (m)", "temperature (K)",
-            "Exercise 5.23: Ion Density (not linearized)");
+            "Exercise 5.29: Ion Density");
+  getchar();
+  grid.plot(neutr_dens, "position (m)", "temperature (K)",
+            "Exercise 5.29: Neutral Density");
 
   // Ready
   return 0;
