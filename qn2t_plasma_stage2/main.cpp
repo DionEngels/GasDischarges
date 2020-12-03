@@ -26,16 +26,15 @@ const double ion_dens_min = 1e12;
 const double ave_dens = n0_dens;
 // The number of grid points
 const int grid_points = 16;
-// The length of the rod
-const double grid_length = 1.0;
-// Ion source term due to power
-const double W = 100 * 5000;
-const double S_plus =
-    0.5 * (W / (M_PI * sqr(grid_size) * grid_length)) / Argon::E_ion();
-// argon properties
+// Power density calculation
+const double grid_length = 1.0; // The length of the rod
+const double W = 100;           // Wattage
+const double power_density = W / (M_PI * sqr(grid_size) * grid_length);
+// argon / electron properties
 const double k_rate = 1e-15;
 const double G = 6.0;
 const double q = 0.5;
+const double sigma_ea = 2e-20;
 
 // B.Broks, 9-1-04:
 // A function which computes your local buffer density based on an average
@@ -116,6 +115,13 @@ double ambipolar_diffusion_coefficient(double n0, double Te, double Th) {
 
   return PhysConst::k_b * Th * tau_ia / Argon::Mass() * (1 + Te / Th);
 }
+
+double e_heat_cond(double ne, double na, double Te) {
+  return PhysConst::k_b / sigma_ea * ne / na *
+         sqrt(8 * PhysConst::k_b * Te / (M_PI * PhysConst::me));
+}
+
+double e_heavy_heat_trans() {}
 
 int main(int argc, char **argv) {
   double residue;
