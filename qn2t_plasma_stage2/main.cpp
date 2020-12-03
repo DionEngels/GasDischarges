@@ -35,6 +35,9 @@ const double k_rate = 1e-15;
 const double G = 6.0;
 const double q = 0.5;
 const double sigma_ea = 2e-20;
+// settings
+const double urf_ion = 0.95;
+const double urf_Te = 0.99;
 
 // B.Broks, 9-1-04:
 // A function which computes your local buffer density based on an average
@@ -121,10 +124,19 @@ double e_heat_cond(double ne, double na, double Te) {
          sqrt(8 * PhysConst::k_b * Te / (M_PI * PhysConst::me));
 }
 
-double e_heavy_heat_trans() {}
+double e_heavy_heat_trans(double ne, double na, double Te) {
+  double v_ea = ne * na * sigma_ea *
+                sqrt(8 * PhysConst::k_b * Te / (M_PI * PhysConst::me));
+  return v_ea * 3 * PhysConst::me / Argon::Mass() * PhysConst::k_b;
+}
 
 int main(int argc, char **argv) {
-  double residue;
+  double S_plus_constant;
+  double S_plus_prop;
+  double S_eh;
+
+  double res_ion;
+  double res_Te;
   int iterations = 0;
   // The grid. The first argument is the amount of grid points, the
   // second argument is the position of the left edge, and the third
@@ -160,34 +172,58 @@ int main(int argc, char **argv) {
     Th[i] = Th_max - sqr(grid.pos_np(i) / grid.pos_np(grid.num_np() - 1)) *
                          (Th_max - Th_min);
   }
+  ion_dens = ion_dens_min;
+  // set underrelaxation
+  Te.set_urf(urf_Te);
+  ion_dens.set_urf(urf_ion);
 
   // Solve
   do {
     // update
     calculate_buffer_density(ave_dens, grid, neutr_dens, ion_dens, Te, Th);
     for (unsigned i = 0; i < grid.num_np(); ++i) {
+      // calculate source terms
+      S_plus_constant = neutr_dens[i] * ion_dens[i] * kion(Te[i]);
+      S_plus_prop = pow(ion_dens[i], 2) * krec(Te[i]);
+      S_eh = e_heavy_heat_trans(ion_dens[i], neutr_dens[i], Te[i]);
+
+      // update ion density
       ion_dens.lambda[i] =
           ambipolar_diffusion_coefficient(neutr_dens[i], Te[i], Th[i]);
-      ion_dens.sc[i] = 0.0;
-      ion_dens.sc[i] += neutr_dens[i] * ion_dens[i] * kion(Te[i]);
-      ion_dens.sc[i] += 2 * pow(ion_dens[i], 3) * krec(Te[i]);
-      ion_dens.sp[i] = -3 * pow(ion_dens[i], 2) * krec(Te[i]);
+      ion_dens.sc[i] = S_plus_constant;
+      ion_dens.sp[i] = -S_plus_prop;
+
+      // update Te
+      Te.lambda[i] = e_heat_cond(ion_dens[i], neutr_dens[i], Te[i]);
+      Te.sc[i] =
+          power_density -
+          (S_plus_constant - S_plus_prop * ion_dens[i]) * Argon::E_ion() -
+          S_eh * Th[i];
+      Te.sp[i] = S_eh;
     }
 
-    residue = ion_dens.Update(); // solve
-    iterations++;
-    std::cout << "Iteration " << iterations << "\t Current residue " << residue
-              << std::endl;
-  } while (residue > 1e-8);
+    // solve
+    res_ion = ion_dens.Update();
+    res_Te = Te.Update();
 
-  std::cout << "Ion Density centre: " << ion_dens[0] << std::endl;
+    iterations++;
+    std::cout << "Iteration " << iterations << "\t Residue ion " << res_ion
+              << "\t Residue Te: " << res_Te << std::endl;
+  } while (std::max(res_Te, res_ion) > 1e-8);
+
+  std::cout << "Ion density centre: " << ion_dens[0] << std::endl;
+  std::cout << "Neutral density centre: " << neutr_dens[0] << std::endl;
+  std::cout << "Te centre: " << Te[0] << std::endl;
 
   // plot
-  grid.plot(ion_dens, "position (m)", "temperature (K)",
-            "Exercise 5.29: Ion Density");
+  grid.plot(ion_dens, "position (m)", "density (m^{-3})",
+            "Exercise 5.34: Ion Density");
   getchar();
-  grid.plot(neutr_dens, "position (m)", "temperature (K)",
-            "Exercise 5.29: Neutral Density");
+  grid.plot(neutr_dens, "position (m)", "density (m^{-3})",
+            "Exercise 5.34: Neutral Density");
+  getchar();
+  grid.plot(Te, "position (m)", "temperature (K)",
+            "Exercise 5.34: Electron temperature");
 
   // Ready
   return 0;
