@@ -164,6 +164,7 @@ int main(int argc, char **argv) {
       ion_dens.sc[i] = 0.0;
       ion_dens.sc[i] += S_plus;
       ion_dens.sc[i] -= pow(ion_dens[i], 3) * krec(Te[i]);
+      /*
       // Natural
       ion_dens.sc[i] = S_plus;
       ion_dens.sp[i] = -pow(ion_dens[i], 2) * krec(Te[i]);
@@ -182,6 +183,7 @@ int main(int argc, char **argv) {
       ion_dens.sc[i] += S_plus;
       ion_dens.sc[i] += 2 * pow(ion_dens[i], 3) * krec(Te[i]);
       ion_dens.sp[i] = -3 * pow(ion_dens[i], 2) * krec(Te[i]);
+      */
     }
 
     residue = ion_dens.Update(); // solve
@@ -195,9 +197,6 @@ int main(int argc, char **argv) {
   // plot
   grid.plot(ion_dens, "position (m)", "temperature (K)",
             "Exercise 5.23: Ion Density (not linearized)");
-  getchar();
-  // grid.plot(neutr_dens, "position (m)", "temperature (K)", "Exercise 5.22:
-  // Neutral Density");
 
   // Ready
   return 0;
