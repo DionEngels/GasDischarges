@@ -40,3 +40,4 @@
 .pdf
 /figs
 *.dat
+!Makefile
