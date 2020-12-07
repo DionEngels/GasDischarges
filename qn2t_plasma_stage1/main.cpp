@@ -176,10 +176,10 @@ int main(int argc, char **argv) {
   std::cout << "Ion Density centre: " << ion_dens[0] << std::endl;
 
   // plot
-  grid.plot(ion_dens, "position (m)", "temperature (K)",
+  grid.plot(ion_dens, "position (m)", "density (m^{-3})",
             "Exercise 5.22: Ion Density");
   getchar();
-  grid.plot(neutr_dens, "position (m)", "temperature (K)",
+  grid.plot(neutr_dens, "position (m)", "density (m^{-3})",
             "Exercise 5.22: Neutral Density");
 
   // Ready
