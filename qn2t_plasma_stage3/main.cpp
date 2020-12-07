@@ -219,8 +219,8 @@ int main(int argc, char **argv) {
 
       // update Th
       Th.lambda[i] = heavy_heat_conductivity(Th[i]);
-      Te.sc[i] = S_eh * Te[i];
-      Te.sp[i] = -S_eh;
+      Th.sc[i] = S_eh * Te[i];
+      Th.sp[i] = -S_eh;
     }
 
     // solve
@@ -230,7 +230,8 @@ int main(int argc, char **argv) {
 
     iterations++;
     std::cout << "Iteration " << iterations << "\t Residue ion " << res_ion
-              << "\t Residue Te: " << res_Te << std::endl;
+              << "\t Residue Te: " << res_Te << "\t Residue Th: " << res_Th
+              << std::endl;
   } while (std::max({res_Te, res_ion, res_Th}) > 1e-8);
 
   std::cout << "Ion density centre: " << ion_dens[0] << std::endl;
