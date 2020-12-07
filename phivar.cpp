@@ -23,9 +23,11 @@ PhiVariable::PhiVariable(const Grid &grid, const Field &w_cv,
 namespace disc {
 inline double A(double P) {
   if (P >= 0) {
+
+  } else {
     std::cerr << "P >=0 assertion failed" << std::endl;
-    std::cerr << P << std::endl;
-    EXIT_FAILURE;
+    std::cerr << "P = " << P << std::endl;
+    abort();
   }
 #define EXPONENTIAL_SCHEME
 #ifdef EXPONENTIAL_SCHEME
