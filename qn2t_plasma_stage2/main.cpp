@@ -36,7 +36,7 @@ const double G = 6.0;
 const double q = 0.5;
 const double sigma_ea = 2e-20;
 // settings
-const double urf_ion = 0.95;
+const double urf_ion = 0.66;
 const double urf_Te = 0.99;
 
 // B.Broks, 9-1-04:
@@ -196,10 +196,15 @@ int main(int argc, char **argv) {
       // update Te
       Te.lambda[i] = e_heat_cond(ion_dens[i], neutr_dens[i], Te[i]);
       Te.sc[i] =
-          power_density -
-          (S_plus_constant - S_plus_prop * ion_dens[i]) * Argon::E_ion() -
-          S_eh * Th[i];
-      Te.sp[i] = S_eh;
+          power_density +
+          ion_dens[i] * neutr_dens[i] * Argon::E_ion() *
+              (kion(Te[i]) * (Argon::E_ion() / (PhysConst::k_b * Te[i]) - 1)) -
+          pow(ion_dens[i], 3) * Argon::E_ion() * krec(Te[i]) +
+          S_eh * Th[i] / (Te[i] - Th[i]);
+      Te.sp[i] =
+          -ion_dens[i] * neutr_dens[i] * Argon::E_ion() *
+              (kion(Te[i]) * (Argon::E_ion() / (PhysConst::k_b * sqr(Te[i])))) -
+          S_eh / (Te[i] - Th[i]);
     }
 
     // solve
