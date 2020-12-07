@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <cmath>
+#include <initializer_list>
 #include <iostream>
 
 #include "argon.h"
@@ -145,6 +147,7 @@ int main(int argc, char **argv) {
 
   double res_ion;
   double res_Te;
+  double res_Th;
   int iterations = 0;
   // The grid. The first argument is the amount of grid points, the
   // second argument is the position of the left edge, and the third
@@ -213,30 +216,40 @@ int main(int argc, char **argv) {
           -ion_dens[i] * neutr_dens[i] * Argon::E_ion() *
               (kion(Te[i]) * (Argon::E_ion() / (PhysConst::k_b * sqr(Te[i])))) -
           S_eh / (Te[i] - Th[i]);
+
+      // update Th
+      Th.lambda[i] = heavy_heat_conductivity(Th[i]);
+      Te.sc[i] = S_eh * Te[i];
+      Te.sp[i] = -S_eh;
     }
 
     // solve
     res_ion = ion_dens.Update();
     res_Te = Te.Update();
+    res_Th = Th.Update();
 
     iterations++;
     std::cout << "Iteration " << iterations << "\t Residue ion " << res_ion
               << "\t Residue Te: " << res_Te << std::endl;
-  } while (std::max(res_Te, res_ion) > 1e-8);
+  } while (std::max({res_Te, res_ion, res_Th}) > 1e-8);
 
   std::cout << "Ion density centre: " << ion_dens[0] << std::endl;
   std::cout << "Neutral density centre: " << neutr_dens[0] << std::endl;
   std::cout << "Te centre: " << Te[0] << std::endl;
+  std::cout << "Th centre: " << Th[0] << std::endl;
 
   // plot
   grid.plot(ion_dens, "position (m)", "density (m^{-3})",
-            "Exercise 5.34: Ion Density");
+            "Exercise 5.37: Ion Density");
   getchar();
   grid.plot(neutr_dens, "position (m)", "density (m^{-3})",
-            "Exercise 5.34: Neutral Density");
+            "Exercise 5.37: Neutral Density");
   getchar();
   grid.plot(Te, "position (m)", "temperature (K)",
-            "Exercise 5.34: Electron temperature");
+            "Exercise 5.37: Electron temperature");
+  getchar();
+  grid.plot(Th, "position (m)", "temperature (K)",
+            "Exercise 5.37: Neutral temperature");
 
   // Ready
   return 0;
