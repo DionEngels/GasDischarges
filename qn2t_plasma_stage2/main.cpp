@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
     Th[i] = Th_max - sqr(grid.pos_np(i) / grid.pos_np(grid.num_np() - 1)) *
                          (Th_max - Th_min);
   }
-  ion_dens = ion_dens_min;
+  ion_dens = ion_dens_max;
   // set underrelaxation
   Te.set_urf(urf_Te);
   ion_dens.set_urf(urf_ion);
