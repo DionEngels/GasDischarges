@@ -2,13 +2,11 @@
 #include <iostream>
 #include <sstream>
 
-
 #include "argon.h"
 #include "disc.h"
 #include "lutable.h"
 #include "phivar.h"
 #include "poisson.h"
-
 
 // Cartesian gradient on ew-grid from np-data
 void gradient_np_cv(const Grid &grid, const Field &f, Field &gradf) {
@@ -43,12 +41,12 @@ const unsigned iter_log =
 
 #define DC_SIMULATION
 #ifdef DC_SIMULATION
-const double dt_max = 1e-8; // [s] highest allowed timestep
-const double simtime = 10;  // [s] complete simulation time.
-const double dt_out = 1e-5; // [s] time between writing output.
+const double dt_max = 1e-8;  // [s] highest allowed timestep
+const double simtime = 0.01; // [s] complete simulation time.
+const double dt_out = 1e-2;  // [s] time between writing output.
 
 double Vwest(double t) {
-  const double Vampl = -400; // V
+  const double Vampl = 400; // V
   return Vampl;
 }
 
@@ -56,8 +54,8 @@ double Vwest(double t) {
 
 const double freq = 1 * 1e6; // [Hz]
 const unsigned Nminstepspercycle = 50;
-const unsigned Ncycles = 10000;
-const unsigned NoutPerCycle = 1000;
+const unsigned Ncycles = 1;
+const unsigned NoutPerCycle = 1;
 
 double Vwest(double t) {
   const double Vampl = -400;                     // [V]
@@ -65,8 +63,8 @@ double Vwest(double t) {
   return Vampl * std::cos(omega * t);
 }
 
-const double period = 1.0 / freq;                                 // [s]
-const double dt_max = std::min(1e-8, period / Nminstepspercycle); // [s]
+const double period = 1.0 / freq;                                  // [s]
+const double dt_max = std::min(1e-10, period / Nminstepspercycle); // [s]
 const double simtime = period * Ncycles; // [s], complete simulation time.
 const double dt_out =
     period / (NoutPerCycle * freq); // [s], between writing output.
@@ -85,13 +83,14 @@ const double mgas = PhysConst::AMU * 4;
 
 // the mean electron energy as a function of the reduced field
 double eps_e(double E_N) {
-  static mdLookupTable lut("lut/epsilon.dat", 1e-21, PhysConst::e);
+  static mdLookupTable lut("example_reactor_1/lut/epsilon.dat", 1e-21,
+                           PhysConst::e);
   return lut.lookup(E_N);
 }
 
 // the electron mobility as a function of the reduced field
 double mu_e(double E_N) {
-  static mdLookupTable lut("lut/muN.dat", PhysConst::e, 1);
+  static mdLookupTable lut("example_reactor_1/lut/muN.dat", PhysConst::e, 1);
   return -lut.lookup(eps_e(E_N)) / gasdens;
 }
 
@@ -109,7 +108,7 @@ double mu_i(double E_N) {
   const double xm = 1e-21;
   const double ym = 2.69e19 / 0.01;
   // the table contains muN(E/N) in the units xm, ym given above.
-  static mdLookupTable lut("lut/mup-ion.dat", xm, ym);
+  static mdLookupTable lut("example_reactor_1/lut/mup-ion.dat", xm, ym);
   const double muN = (lut.lookup(E_N)) / gasdens;
   return muN;
 }
@@ -127,7 +126,7 @@ double D_i(double E_N) {
 // the ionisation rate coefficient [m^3/s] as a function of the reduced field
 double Kion(double E_N) {
   // the table lists K(eps), with eps in eV.
-  static mdLookupTable lut("lut/Kion.dat", PhysConst::e, 1);
+  static mdLookupTable lut("example_reactor_1/lut/Kion.dat", PhysConst::e, 1);
   return lut.lookup(eps_e(E_N));
 }
 
@@ -449,31 +448,31 @@ int main() {
       // append <ne> and <ni> to the meanvals file
       meanvals << t << '\t' << mean_ni << '\t' << mean_ne << std::endl;
 
-      std::ofstream rfs("rho.dat");
+      std::ofstream rfs("example_reactor_1/rho.dat");
       grid.write(rfs, V.rho);
 
-      std::ofstream Vfs("V.dat");
+      std::ofstream Vfs("example_reactor_1/V.dat");
       grid.write(Vfs, V);
 
-      std::ofstream Efs("E.dat");
+      std::ofstream Efs("example_reactor_1/E.dat");
       grid.write(Efs, E);
 
-      std::ofstream efs("ne.dat");
+      std::ofstream efs("example_reactor_1/ne.dat");
       grid.write(efs, dens_e);
 
-      std::ofstream flux_efs("flux_ne.dat");
+      std::ofstream flux_efs("example_reactor_1/flux_ne.dat");
       grid.write(flux_efs, dens_e.flux_density());
 
-      std::ofstream flux_ifs("flux_ni.dat");
+      std::ofstream flux_ifs("example_reactor_1/flux_ni.dat");
       grid.write(flux_ifs, dens_i.flux_density());
 
-      std::ofstream J_cv_fs("J_cv.dat");
+      std::ofstream J_cv_fs("example_reactor_1/J_cv.dat");
       grid.write(J_cv_fs, J_cv);
 
-      std::ofstream ifs("ni.dat");
+      std::ofstream ifs("example_reactor_1/ni.dat");
       grid.write(ifs, dens_i);
 
-      std::ofstream sfs("sion.dat");
+      std::ofstream sfs("example_reactor_1/sion.dat");
       grid.write(sfs, sion);
 
       // we update tout so the files will
@@ -515,5 +514,20 @@ int main() {
     restarting = true;
   }
   std::cout << "Simulation finished; t =" << t << std::endl;
+
+  std::ofstream Vfs("example_reactor_1/V.dat");
+  grid.write(Vfs, V);
+
+  std::ofstream efs("example_reactor_1/ne.dat");
+  grid.write(efs, dens_e);
+
+  std::ofstream ifs("example_reactor_1/ni.dat");
+  grid.write(ifs, dens_i);
+
+  grid.plot(dens_e, dens_i, "position (m)", "density (m^{-3})", "",
+            "Exercise 6.6: Densities");
+  getchar();
+  grid.plot(V, "position (m)", "Voltage (V))", "Exercise 6.6: Potential");
+
   return 0;
 }

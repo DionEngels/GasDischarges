@@ -161,15 +161,14 @@ void Grid::plot(const Field &f1, const Field &f2, std::string xlabel,
   FILE *pipe = popen("gnuplot", "w");
   if (pipe != NULL) {
 
-    fprintf(pipe, "unset key\n");
+    fprintf(pipe, "set key left top\n");
     fprintf(pipe, "set ytics nomirror\n");
-    fprintf(pipe, "set y2tics nomirror\n");
     fprintf(pipe, "set xlabel \"%s\"\n", xlabel.c_str());
     fprintf(pipe, "set ylabel \"%s\"\n", ylabel.c_str());
-    fprintf(pipe, "set y2label \"%s\"\n", y2label.c_str());
     fprintf(pipe, "set xrange [%f:%f]\n", pos_np(0), pos_np(num_np() - 1));
     fprintf(pipe, "set title \"%s\"\n", title.c_str());
-    fprintf(pipe, "plot '-' u 1:2 axis x1y1 w l, '' u 1:2 axis x1y2 w l\n");
+    fprintf(pipe, "plot '-' u 1:2 axis x1y1 w l title 'n_e', '' u 1:2 axis "
+                  "x1y1 w l title 'n_i'\n");
     write(pipe, f1);
     fprintf(pipe, "%s\n", "e");
     write(pipe, f2);
