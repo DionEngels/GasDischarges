@@ -30,7 +30,7 @@ int main() {
   // Space charge
   const double e_mob = 300;
   double drift_vel = e_mob * V_e / L;
-  double drift_time = 1e-10;
+  double drift_time = 1e-10; // 1 ns
   double drift_dist = drift_time * drift_vel;
 
   // 3. Discretise the equations
@@ -75,7 +75,8 @@ int main() {
   std::cout << "Maximum charge:\t" << S_max << " C/m^{-3}" << std::endl;
   std::cout << "Minimum charge:\t" << S_min << " C/m^{-3}" << std::endl;
 
-  grid.plot(dens, "position (m)", "Voltage (V)", "Exercise 6.4");
+  grid.plot(dens, "position (m)", "Voltage (V)",
+            "Exercise 6.4 (Timestep = 10^{-10})");
 
   return 0;
 }
