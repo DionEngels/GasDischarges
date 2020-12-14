@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
   } while (residue > tolerance && iter < iter_max);
 
   /// print the resulting EDF to the file eedf.dat
-  std::ofstream eedf_stream("eedf.dat");
+  std::ofstream eedf_stream("example_boltzmann/eedf.dat");
   grid.write(eedf_stream, eedf);
 
   // calculate the average electron energy. In case the field
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
             << Efield / Ngas * 1e21 << " Td)" << std::endl;
   std::cerr << "Average electron energy: " << en_av << " (" << Telec << " K)"
             << std::endl;
-  std::ofstream maxw("maxwell.dat");
+  std::ofstream maxw("example_boltzmann/maxwell.dat");
   for (unsigned i = 0; i < grid.num_np(); ++i) {
     const double eps = grid.pos_np(i);
     maxw << eps << '\t' << eedf_maxwellian(eps, Telec) << std::endl;
