@@ -24,7 +24,6 @@
 #include "physconst.h"
 #include <cmath>
 
-
 namespace Argon {
 
 // Mass in kilogram.
@@ -41,7 +40,7 @@ double E_ion() { return 15.759 * PhysConst::e; }
 // function of the electron energy in Joule.
 class Elastic : public CrossSection {
 public:
-  Elastic() : CrossSection(1e-19) {}
+  Elastic() : CrossSection(0.0) {}
 
 protected:
   double get_above_th(double eps) const { return (1e-19); }
