@@ -34,7 +34,7 @@ const double tolerance = 1e-13;
 // ********** physical configuration **********
 
 // electric field strength [V/m]
-const double Efield = 0;
+const double Efield = 200;
 
 // temperature of the background gas [K]
 const double Tgas = 0; // Zero for Druyvesteyn
@@ -49,7 +49,7 @@ const Argon::Elastic sigma_elas;
 
 // initial guess for the `temperature' T==(2/3k)<eps>) of the electrons
 // used for the initialisation of the EEDF with a Maxwellian function.
-const double Te_init = Tgas;
+const double Te_init = 1 * PhysConst::e / PhysConst::k_b;
 
 // ********** derived auxiliary constants **********
 
