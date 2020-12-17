@@ -42,7 +42,7 @@ Grid::Grid(unsigned n, double cmin, double cmax, GridType grid_type)
 void Grid::write(std::ostream &os, const Field &f) const {
   if (f.size() == m_pos_np.size()) {
     for (unsigned i = 0; i < f.size(); i++) {
-      os << pos_np(i) << '\t' << f[i] << '\n';
+      os << pos_np(i) / PhysConst::e << '\t' << f[i] << '\n';
     }
   } else if (f.size() == m_pos_ew.size()) {
     for (unsigned i = 0; i < f.size(); i++) {
