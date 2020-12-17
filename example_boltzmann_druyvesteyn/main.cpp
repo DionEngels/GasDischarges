@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
   std::ofstream maxw("example_boltzmann_druyvesteyn/maxwell.dat");
   for (unsigned i = 0; i < grid.num_np(); ++i) {
     const double eps = grid.pos_np(i);
-    maxw << eps << '\t' << eedf_maxwellian(eps, Telec) << std::endl;
+    maxw << eps/PhysConst::e << '\t' << eedf_maxwellian(eps, Telec) << std::endl;
   }
 
   // print diagnostics and exit. We return the value 0 on success,
