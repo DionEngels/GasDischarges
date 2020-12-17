@@ -50,23 +50,10 @@ protected:
 // a function of the electron energy in Joule.
 class Inelastic : public CrossSection {
 public:
-  Inelastic() : CrossSection(11.5 * PhysConst::eV) {}
+  Inelastic() : CrossSection(5.0 * PhysConst::eV) {}
 
 protected:
-  double get_above_th(double eps) const {
-    using std::pow;
-    const double eV = 1.6022e-19;
-    eps /= eV; // the lines below want eps in eV.
-    if (eps > 100.0)
-      eps = 100.0;
-    double sigma = 0.0;
-    if (eps >= 11.5) {
-      sigma = 0.034 * pow((eps - 11.5), 1.1) * (1.0 + pow((eps / 15.0), 2.8)) /
-                  (1.0 + pow((eps / 23.0), 5.5)) +
-              0.023 * (eps - 11.5) / (1.0 + pow((eps / 80.0), 1.9));
-    }
-    return (1e-20 * sigma);
-  }
+  double get_above_th(double eps) const { return 200e-22; }
 };
 
 // Crosssection (m^2) for ionisation "e + Ar -> 2e + Ar+" collision as
