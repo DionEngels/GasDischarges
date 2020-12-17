@@ -46,6 +46,7 @@ const double Ngas = 1e23;
 const double M = Argon::Mass();
 
 const Argon::Elastic sigma_elas;
+const Argon::Inelastic sigma_exc;
 
 // initial guess for the `temperature' T==(2/3k)<eps>) of the electrons
 // used for the initialisation of the EEDF with a Maxwellian function.
@@ -56,6 +57,26 @@ const double Te_init = 1 * PhysConst::e / PhysConst::k_b;
 const double E_N = Efield / Ngas;
 
 const double m_M = PhysConst::me / M;
+
+int find_f0(PhiVariable eedf, Grid grid, unsigned position, double energy) {
+  double total_e = grid.pos_np(position) + energy;
+  if (total_e > 30.0) {
+    return 0;
+  }
+  unsigned closest_int = 0;
+  unsigned closest_dist = 100000;
+  double dist;
+  for (unsigned i = position; i < grid.num_np(); ++i) {
+    dist = std::abs(grid.pos_np(i) - total_e);
+    if (dist < closest_dist) {
+      closest_dist = dist;
+      closest_int = i;
+    } else {
+      break;
+    }
+  }
+  return eedf[closest_int];
+}
 
 int main(int argc, char **argv) {
   // Create a Cartesian grid. The coordinate represents the energy value.
@@ -127,13 +148,14 @@ int main(int argc, char **argv) {
      * determined a new guess for the EDF.
      * For example, this is the case when inelastic collisions
      * are taken into account:
-     *
-    for( unsigned i=0; i<grid.num_np(); ++i)
-    {
-            eedf.sc[i] = ...
-            eedf.sp[i] = ...
-    }
      */
+    double f0;
+    for (unsigned i = 0; i < grid.num_np(); ++i) {
+      f0 = find_f0(eedf, grid, i, sigma_exc.eps_th());
+      eedf.sc[i] = 2 * sigma_exc(grid.pos_np(i) + sigma_exc.eps_th()) *
+                   (grid.pos_np(i) + sigma_exc.eps_th()) * f0;
+      eedf.sp[i] = -2 * grid.pos_np(i) * sigma_exc(grid.pos_np(i));
+    }
     // override for i==1 (Patankar, page 145)
     const double huge = 1e60;
     eedf.sc[1] = huge;
