@@ -39,7 +39,6 @@ const double gridsize = 1.0;        // m the size of the drift chamber
 // The main() function: this is where you can see the outline of the
 // algorithm that is implemented in this code.
 int main() {
-  std::cout << std::setprecision(3);
   // Grid to keep track of the physical position of the particles
   Grid grid(nrpoints, 0.0, gridsize, Grid::Cartesian);
   // We have no flow when solving the poisson equation.
