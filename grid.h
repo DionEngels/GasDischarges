@@ -87,7 +87,7 @@ public:
    *  points of this grid.
    */
   void plot(const Field &f, std::string xlabel = "", std::string ylabel = "",
-            std::string title = "") const;
+            std::string title = "");
   /** Writes the field variables \a f1 and \a f2 to stdout for piping to
    *  gnuplot. Optional axis labels \a xlabel and \a ylabel can be provided.
    *  Both fields must be defined on the same mesh, either the nodal or the
@@ -105,6 +105,9 @@ public:
    *  direction as a function of the grid coordinate.
    */
   Grid(unsigned n, double cmin, double cmax, GridType grid_type);
+
+  FILE *pipe = popen("gnuplot", "w");
+  bool first_plot = true;
 
 private:
   const GridType

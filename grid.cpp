@@ -119,21 +119,26 @@ void Grid::write(FILE *pipe, const Field &f1, const Field &f2) const {
 }
 
 void Grid::plot(const Field &f, std::string xlabel, std::string ylabel,
-                std::string title) const {
+                std::string title) {
 
-  FILE *pipe = popen("gnuplot", "w");
-  if (pipe != NULL) {
-
+  if (first_plot) {
     fprintf(pipe, "unset key\n");
     fprintf(pipe, "set xlabel \"%s\"\n", xlabel.c_str());
     fprintf(pipe, "set ylabel \"%s\"\n", ylabel.c_str());
     fprintf(pipe, "set xrange [%f:%f]\n", pos_np(0), pos_np(num_np() - 1));
+
+    first_plot = false;
+  }
+  if (pipe != NULL) {
     fprintf(pipe, "set title \"%s\"\n", title.c_str());
     fprintf(pipe, "plot '-' w l\n");
     write(pipe, f);
     fprintf(pipe, "%s\n", "e");
+
+    fprintf(pipe, "pause 0.05\n");
     fflush(pipe);
 
+    /*
     char output[5];
 
     // wait for command line input
@@ -149,7 +154,9 @@ void Grid::plot(const Field &f, std::string xlabel, std::string ylabel,
       fprintf(pipe, "unset terminal\n");
     }
 
+
     pclose(pipe);
+    */
   } else {
     std::cerr << "Creating plot failed!" << std::endl;
   }
