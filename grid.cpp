@@ -119,14 +119,17 @@ void Grid::write(FILE *pipe, const Field &f1, const Field &f2) const {
 }
 
 void Grid::plot(const Field &f, std::string xlabel, std::string ylabel,
-                std::string title) {
+                std::string title, double ymin, double ymax) {
 
   if (first_plot) {
     fprintf(pipe, "unset key\n");
     fprintf(pipe, "set xlabel \"%s\"\n", xlabel.c_str());
     fprintf(pipe, "set ylabel \"%s\"\n", ylabel.c_str());
     fprintf(pipe, "set xrange [%f:%f]\n", pos_np(0), pos_np(num_np() - 1));
-
+    fprintf(pipe, "set logscale y\n");
+    if (ymax != -1) {
+      fprintf(pipe, "set yrange [%f:%f]\n", ymin, ymax);
+    }
     first_plot = false;
   }
   if (pipe != NULL) {

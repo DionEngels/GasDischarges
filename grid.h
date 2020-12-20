@@ -87,7 +87,7 @@ public:
    *  points of this grid.
    */
   void plot(const Field &f, std::string xlabel = "", std::string ylabel = "",
-            std::string title = "");
+            std::string title = "", double ymin = 0, double ymax = -1);
   /** Writes the field variables \a f1 and \a f2 to stdout for piping to
    *  gnuplot. Optional axis labels \a xlabel and \a ylabel can be provided.
    *  Both fields must be defined on the same mesh, either the nodal or the

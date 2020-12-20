@@ -110,10 +110,6 @@ int main() {
   // ... every nrout iterations we want to update output.
   const unsigned nrout = (int)(dt_out / dt);
 
-  // give some commands common for all plots (logscale and yrange)
-  std::cout << "set logscale y" << std::endl;
-  std::cout << "set yrange [" << particleweight * 25 << ":"
-            << initial_e_nr * particleweight * 25 << "]" << std::endl;
   // we keep track of the positions of the electrons with rho_e
   PhiVariable rho_e(grid, flow_vel, rho_bc, rho_bc);
   // const double inv_charge= - 1.0/ PhysConst::e;
@@ -192,7 +188,9 @@ int main() {
       time_str << t;
       // plot the charge density
       grid.plot(inv_charge, "Position (cm)", "Particle density (m^-3)",
-                "Time = " + time_str.str() + " s");
+                "Time = " + time_str.str() + " s", 1000, // particleweight * 25
+                initial_e_nr * particleweight *
+                    500); // initial_e_nr * particleweight * 25
     }
     // A little check: we might as well stop if there are no
     // electrons or no ions left.
