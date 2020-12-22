@@ -116,6 +116,15 @@ int main() {
   // running average of the drift velocity
   double vdrift = 0.0;
   double relaxation = 1e-4;
+  // predeclare
+  std::ostringstream time_str;
+  Field inv_charge(rho_e.size());
+  Field vel_average((int)(simtime / dt));
+  Field vel_drift((int)(simtime / dt));
+  Field n_particles((int)(simtime / dt));
+  Grid time((int)(simtime / dt) - 2, 0, simtime, Grid::Cartesian);
+  unsigned t_counter = 0;
+
   // Okay all is set, let's roll: finally the real PIC loop:
   for (unsigned long ti = 0; ti < simtime / dt; ++ti) {
     // the present time:
@@ -179,12 +188,11 @@ int main() {
       // find out where the electrons are  and plot them
       electrons.CalcRho(grid, rho_e);
       // define an extra field to plot the results
-      Field inv_charge(rho_e.size());
       for (unsigned i = 0; i < inv_charge.size(); i++) {
         inv_charge[i] = -rho_e[i] / PhysConst::e;
       }
       // define a stream for double to string conversion of the time
-      std::ostringstream time_str;
+      time_str.str("");
       time_str << t;
       // plot the charge density
       grid.plot(inv_charge, "Position (cm)", "Particle density (m^-3)",
@@ -197,6 +205,25 @@ int main() {
     if (electrons.size() == 0) {
       npfFatalError("No particles left anymore");
     }
+    // save
+    vel_average[t_counter] = vz;
+    vel_drift[t_counter] = vdrift;
+    n_particles[t_counter] = electrons.size();
+    t_counter++;
   }
+  // write to dat
+  std::ofstream vel_average_stream("example_drift/vel_average.dat");
+  time.write(vel_average_stream, vel_average);
+  std::ofstream vel_drift_stream("example_drift/vel_drift.dat");
+  time.write(vel_drift_stream, vel_drift);
+  std::ofstream n_stream("example_drift/n_particles.dat");
+  time.write(n_stream, n_particles);
+
+  // Final plot
+  grid.plot_freeze(inv_charge, "Position (cm)", "Particle density (m^-3)",
+                   "Time = " + time_str.str() + " s",
+                   1000, // particleweight * 25
+                   initial_e_nr * particleweight * 500);
+
   return 0;
 }

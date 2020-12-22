@@ -165,6 +165,42 @@ void Grid::plot(const Field &f, std::string xlabel, std::string ylabel,
   }
 }
 
+void Grid::plot_freeze(const Field &f, std::string xlabel, std::string ylabel,
+                       std::string title, double ymin, double ymax) {
+  fprintf(pipe, "unset key\n");
+  fprintf(pipe, "set xlabel \"%s\"\n", xlabel.c_str());
+  fprintf(pipe, "set ylabel \"%s\"\n", ylabel.c_str());
+  fprintf(pipe, "set xrange [%f:%f]\n", pos_np(0), pos_np(num_np() - 1));
+  fprintf(pipe, "set logscale y\n");
+  if (ymax != -1) {
+    fprintf(pipe, "set yrange [%f:%f]\n", ymin, ymax);
+  }
+  fprintf(pipe, "set title \"%s\"\n", title.c_str());
+  fprintf(pipe, "plot '-' w l\n");
+  write(pipe, f);
+  fprintf(pipe, "%s\n", "e");
+
+  fprintf(pipe, "pause 0.05\n");
+  fflush(pipe);
+
+  char output[5];
+
+  // wait for command line input
+  std::cin.clear();
+  std::cin.ignore(std::cin.rdbuf()->in_avail());
+  std::cin.get(output, 5);
+
+  if (strcmp(output, "save") == 0) {
+    fprintf(pipe, "set terminal pdf\n");
+    fprintf(pipe, "set output \"figs/%s.pdf\"\n", title.c_str());
+    fprintf(pipe, "replot\n");
+    fprintf(pipe, "unset output\n");
+    fprintf(pipe, "unset terminal\n");
+  }
+
+  pclose(pipe);
+}
+
 void Grid::plot(const Field &f1, const Field &f2, std::string xlabel,
                 std::string ylabel, std::string y2label,
                 std::string title) const {
