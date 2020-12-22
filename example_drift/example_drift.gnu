@@ -7,7 +7,7 @@ set title "Exercise 8.2"
 set key left bottom
 set key horizontal
 set size ratio 0.15
-plot "vel_drift.dat" w l lw 1 axis x1y1, "vel_average.dat" w l lw 1 axis x1y1, "n_particles.dat" w l lw 1 axis x1y2
+plot "vel_average.dat" w l lw 1 axis x1y1, "vel_drift.dat" w l lw 1 axis x1y1, "n_particles.dat" w l lw 1 axis x1y2
 pause 2
 set term pdf size 6 in, 1.5 in font "Helvetica,8"
 set output "../figs/Exercise 8.2 combi.pdf"
