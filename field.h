@@ -40,7 +40,9 @@ public:
    *  constant member.
    */
   const double operator[](unsigned i) const {
-    assert(i < m_data.size());
+    if (i > m_data.size()) {
+      throw std::invalid_argument("Outside bounds");
+    }
     return m_data[i];
   }
   /** This accessor provides access to element \a i of a field variable f
@@ -50,7 +52,9 @@ public:
    *  member is _not_ constant.
    */
   double &operator[](unsigned i) {
-    assert(i < m_data.size());
+    if (i > m_data.size()) {
+      throw std::invalid_argument("Outside bounds");
+    }
     return m_data[i];
   }
   /** this member returns the number of field points.
