@@ -30,7 +30,7 @@ const double particleweight = 1e+9; // real per simulation particle.
 const unsigned nrpoints = 50;       // nodal points inside plasma.
 const double Efield = 100;          // V/m Electric field in the drift tube
 const double N = 4e21;              // m^-3 (background density).
-const double dt = 1e-11;            // seconds, particle path integr. time.
+const double dt = 0.5e-11;          // seconds, particle path integr. time.
 const double simtime = 1e-6;        // seconds, complete simulation time.
 const double dt_Iurf = 1e-6;        // seconds, current relaxation time.
 const double dt_out = 5e-9;         // seconds, between writing output.
@@ -39,15 +39,6 @@ const double gridsize = 1.0;        // m the size of the drift chamber
 // The main() function: this is where you can see the outline of the
 // algorithm that is implemented in this code.
 int main() {
-  // Grid to keep track of the physical position of the particles
-  Grid grid(nrpoints, 0.0, gridsize, Grid::Cartesian);
-  // We have no flow when solving the poisson equation.
-  Field flow_vel(grid.num_ew(), 0.0);
-  // We define charge densities on a grid, but we don't need to solve
-  // a phi-equation for them: no need for boundary conditions here,
-  // however, something needs to be defined.
-  DirichletBndCond rho_bc(0.0);
-
   // A swarm is a collection of particles of the same kind. We have
   // a swarm for the electrons only. For now we just
   // construct it, but only fill it with particles later, when we
@@ -107,15 +98,12 @@ int main() {
   // ... every nrout iterations we want to update output.
   const unsigned nrout = (int)(dt_out / dt);
 
-  // we keep track of the positions of the electrons with rho_e
-  PhiVariable rho_e(grid, flow_vel, rho_bc, rho_bc);
   // const double inv_charge= - 1.0/ PhysConst::e;
   // running average of the drift velocity
   double vdrift = 0.0;
   double relaxation = 1e-4;
   // predeclare
   std::ostringstream time_str;
-  Field inv_charge(rho_e.size());
   Field vel_average((int)(simtime / dt));
   Field vel_drift((int)(simtime / dt));
   Field n_particles((int)(simtime / dt));
@@ -173,20 +161,9 @@ int main() {
     if (!(ti % nrout)) {
       std::cerr << std::setw(20) << t << std::setw(20) << vz << std::setw(20)
                 << vdrift << std::setw(20) << electrons.size() << std::endl;
-      // find out where the electrons are  and plot them
-      electrons.CalcRho(grid, rho_e);
-      // define an extra field to plot the results
-      for (unsigned i = 0; i < inv_charge.size(); i++) {
-        inv_charge[i] = -rho_e[i] / PhysConst::e;
-      }
       // define a stream for double to string conversion of the time
       time_str.str("");
       time_str << t;
-      // plot the charge density
-      grid.plot(inv_charge, "Position (cm)", "Particle density (m^-3)",
-                "Time = " + time_str.str() + " s", 1000, // particleweight * 25
-                initial_e_nr * particleweight *
-                    500); // initial_e_nr * particleweight * 25
     }
     // A little check: we might as well stop if there are no
     // electrons or no ions left.
@@ -207,11 +184,7 @@ int main() {
   std::ofstream n_stream("example_drift/n_particles.dat");
   time.write(n_stream, n_particles);
 
-  // Final plot
-  grid.plot_freeze(inv_charge, "Position (cm)", "Particle density (m^-3)",
-                   "Time = " + time_str.str() + " s",
-                   1000, // particleweight * 25
-                   initial_e_nr * particleweight * 500);
-
+  std::ofstream eedf_stream("example_drift/eedf.dat");
+  electrons.WriteEDF(eedf_stream);
   return 0;
 }
