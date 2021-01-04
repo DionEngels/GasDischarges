@@ -133,15 +133,6 @@ int main() {
     for (unsigned p = 0; p < nrelectrons; ++p) {
       // 4e) move the particle
       electrons[p].Move(Efield, dt);
-      // 5e) did it collide with the wall?
-      if (electrons[p].Position() < 0.0) {
-        // the electron is lost.
-        electrons[p].Active() = false;
-      }
-      if (electrons[p].Position() > gridsize) {
-        // the electron is lost.
-        electrons[p].Active() = false;
-      }
       // 6e) determine if it needs to collide with the
       //     background gas.
       if (electrons[p].Active() && (electrons[p].Tcol() <= t)) {
