@@ -61,14 +61,12 @@ int main() {
   // collision. If this is omitted it will be set to 0.0;
   HardSphereProcess e_elastic(new Argon::Elastic);
   HardSphereProcess e_inelastic(new Argon::Inelastic, 12.0 * PhysConst::eV);
-  HardSphereProcess e_ionisation(new Argon::Ionisation, 15.8 * PhysConst::eV);
   // For convenience later: pointers to the processes in which electrons
   // are involved are collected in an object of type ProcessList. This
   // will allow us to do something like e_proclist[0] to get `e_elastic'.
   ProcessList e_proclist;
   e_proclist.AddProcess(&e_elastic);
   e_proclist.AddProcess(&e_inelastic);
-  e_proclist.AddProcess(&e_ionisation);
   // Null-collision: in order to set a collision time, it is convenient
   // if the total (of all processes) cross section is independent of the
   // electron/ion energy. We accomplish this by finding the maximum cross
@@ -78,9 +76,8 @@ int main() {
   for (unsigned i = 0; i < 1000; ++i) {
     const double energy = 0.1 * i * PhysConst::eV;
     // electrons:
-    const double e_sum = e_elastic.CrossSec(energy) +
-                         e_inelastic.CrossSec(energy) +
-                         e_ionisation.CrossSec(energy);
+    const double e_sum =
+        e_elastic.CrossSec(energy) + e_inelastic.CrossSec(energy);
     if (e_sum > e_max_crosssec)
       e_max_crosssec = e_sum;
   }
