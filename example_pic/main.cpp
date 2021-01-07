@@ -362,6 +362,21 @@ int main() {
   grid.plot(poisson, rho_e + rho_i, "Position (cm)", "Potential (V)",
             "Charge density (C m^-3)", "time = " + time_str.str() + " s");
 
+  // final diagnostics, assuming equilibrium conditions at the end of
+  // simulation
+  double av_E = electrons.MeanEnergy();        // obtain average electron energy
+  double av_v = abs(electrons.MeanVelocity()); // obtain average velocity vector
+  double sigma_tot =
+      e_elastic.CrossSec(av_E) + e_inelastic.CrossSec(av_E) +
+      e_ionisation.CrossSec(
+          av_E); // total cross section at average electron energy
+  double l_mfp =
+      1.0 / (N * sigma_tot);       // mean free path for e-neutral collisions
+  double tau_col = l_mfp / (av_v); // collision time
+
+  std::cout << "Mean free path: " << l_mfp << "\tCollision time: " << tau_col
+            << std::endl;
+
   return 0;
 }
 
