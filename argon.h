@@ -43,7 +43,21 @@ public:
   Elastic() : CrossSection(0.0) {}
 
 protected:
-  double get_above_th(double eps) const { return (1e-19); }
+  double get_above_th(double eps) const {
+    using std::pow;
+    const double eV = 1.6022e-19;
+    eps /= eV; // the lines below want eps in eV.
+    if (eps > 100.0)
+      eps = 100.0;
+    double sigma =
+        std::fabs(
+            6.0 / pow((1.0 + (eps / 0.1) + pow((eps / 0.6), 2)), 3.3) -
+            1.1 * pow(eps, 1.4) / (1.0 + pow((eps / 15.0), 1.2)) /
+                sqrt(1.0 + pow((eps / 5.5), 2.5) + pow((eps / 60.0), 4.1))) +
+        0.05 / pow((1.0 + (eps / 10.0)), 2.0) +
+        0.01 * pow(eps, 3.0) / (1.0 + pow((eps / 12), 6.0));
+    return (1e-20 * sigma);
+  }
 };
 
 // Crosssection (m^2) for inelastic "e + Ar -> e + Ar*" collision as
