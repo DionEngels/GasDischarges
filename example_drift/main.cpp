@@ -28,8 +28,8 @@
 const double initial_e_nr = 2000;   // init. nr. of simulation electrons.
 const double particleweight = 1e+9; // real per simulation particle.
 const unsigned nrpoints = 50;       // nodal points inside plasma.
-const double Efield = 100;          // V/m Electric field in the drift tube
-const double N = 4e21;              // m^-3 (background density).
+const double Efield = 200;          // V/m Electric field in the drift tube
+const double N = 1e23;              // m^-3 (background density).
 const double dt = 0.5e-11;          // seconds, particle path integr. time.
 const double simtime = 1e-6;        // seconds, complete simulation time.
 const double dt_Iurf = 1e-6;        // seconds, current relaxation time.
